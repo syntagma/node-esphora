@@ -7,7 +7,7 @@
 //var restify = require('restify');
 var winston = require('winston');
 //var bunyan = require('bunyan');
-var save = require('save');
+//var save = require('save');
 //var userSave = save('user');
 var configuration = require ("./bootstrapping/configuration");
 
