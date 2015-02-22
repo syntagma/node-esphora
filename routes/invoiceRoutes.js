@@ -29,15 +29,15 @@ function findInvoice(req, res, next) {
             next();
         }
         else {
-            console.log(err);
-            res.send(err);
+            logger.error(new Error(err));
+            res.send(new Error(err));
         }
     })
 }
 
 var routes = [
     {
-        uri: '/api/invoices/find',
+        uri: '/api/invoices/:companyId/find/:pos/:type/:number',
         verb: "GET",
         action: findInvoice
     }

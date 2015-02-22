@@ -4,17 +4,14 @@
 var ticketFactory = require("../factories/ticketFactory");
 var logger = require("winston");
 var path = require('path');
+var fs = require('fs');
 
 exports.CmsBuilder = function (companyId, callback) {
     var self = this;
-    var ticket;
+    var ticket = {};
     var cmsMessage;
 
     mainStream();
-
-    function checkExistingTicket() {
-        return false;
-    }
 
     function createTicket(callback) {
         ticket = ticketFactory.createTicket("30700627825", "30700627825", "wsfe", 3600);
@@ -32,7 +29,7 @@ exports.CmsBuilder = function (companyId, callback) {
         var Readable = require('stream').Readable;
 
         var s = new Readable();
-        s.push(ticket);    // the string you want
+        s.push(ticket.xml);    // the string you want
         s.push(null);      // indicates end-of-file basically - the end of the stream
 
         signHelper.sign({
@@ -45,14 +42,8 @@ exports.CmsBuilder = function (companyId, callback) {
             logger.info("signTicket ++++++++++++");
             callback(err);
         }).then(function (result) {
-            //logger.info("Signed Response: ");
-            //console.dir(result); // {der, child}
-
-            //var cmsFile = fs.readFileSync(path.join(__dirname, "30700627825.der4"));
-            //cmsMessage = cmsFile;
             cmsMessage = result.der;
-            //fs.writeFileSync( path.join(__dirname, "30700627825.der"), result.der, "binary");
-            //logger.info("CMS Obtenido: " + res.der);
+
             logger.info("signTicket ++++++++++++");
             callback(null);
         });
@@ -64,7 +55,6 @@ exports.CmsBuilder = function (companyId, callback) {
 
     function encodeCms() {
         cmsMessage = Buffer(cmsMessage).toString('base64');
-        logger.info("CMS en BASE64: " + cmsMessage);
     }
 
     function invokeAfipWSAA(callback) {
@@ -79,58 +69,62 @@ exports.CmsBuilder = function (companyId, callback) {
 
             client.loginCms(args, function (err, result) {
                 var parseString = require('xml2js').parseString;
-                logger.info("loginCms returned");
 
                 if (err) {
                     logger.error("loginCms error returned");
                     //var cleanedErr = err.replace("\ufeff", "");
                     parseString(err.body, function (err, parsedErr) {
                         if (err) {
-                            logger.error("parseString: Error parsing string. Error: " + err);
                             callback("parseString: Error parsing string. Error: " + err);
                             return;
 
                         }
-                        logger.info("loginCms parsed");
-                        if (!err) {
-                            callback(err, parsedErr);
-                        }
-                        else {
-                            logger.info(err);
-                        }
+
+                        var afipError = {
+                            "code": parsedErr['soapenv:Envelope']['soapenv:Body'][0]['soapenv:Fault'][0].faultcode[0]['_'],
+                            "message": parsedErr['soapenv:Envelope']['soapenv:Body'][0]['soapenv:Fault'][0].faultstring[0]
+                        };
+
+                        callback(afipError);
+                        logger.info("invokeAfipWSAA ++++++++++++++ ");
                     });
                     return;
                 }
-                //console.log('connected....');
-                parseString(result, function (err, parsed) {
+
+                parseString(result.loginCmsReturn, function (err, parsed) {
                     console.dir(parsed);
-                    //TODO: Una vez que funcione bien
+                    callback(err, parsed.loginTicketResponse.credentials);
+                    logger.info("invokeAfipWSAA ++++++++++++++ ");
                 });
             });
         });
-        logger.info("invokeAfipWSAA ++++++++++++++ ");
 
     }
 
     function mainStream() {
         logger.info("Start Building CMS ... ");
-        if (checkExistingTicket()) {
-            logger.info("Existing Ticket ... ");
-            return ticket;
-        }
 
-        logger.info("Starting new Ticket ... ");
         createTicket(function (err) {
             if (err) {
-                return (err);
+                callback (err);
+                return;
             }
             signTicket(function (err) {
                 if (err) {
-                    return (err);
+                    callback (err);
+                    return;
                 }
                 encodeCms();
-                invokeAfipWSAA(function (err, ticketResponse) {
-                    callback(err, ticketResponse);
+                invokeAfipWSAA(function (err, credentials) {
+                    if (err){
+                        callback (err);
+                        return;
+                    }
+                    console.dir(credentials);
+                    ticket.company = companyId;
+                    ticket.sign = credentials[0].sign;
+                    ticket.token = credentials[0].token;
+                    callback(err, ticket);
                 });
 
             });

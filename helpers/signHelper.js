@@ -39,7 +39,7 @@ function sign(options, cb) {
             throw new Error('Invalid certificate.');
 
         var command = util.format(
-            'openssl smime -sign -text -signer %s -inkey %s -outform DER -nodetach',
+            'openssl smime -sign -binary -signer %s -inkey %s -outform DER -nodetach',
             options.cert,
             options.key
         );
@@ -58,7 +58,7 @@ function sign(options, cb) {
 
         child.on('close', function (code) {
             if (code !== 0)
-                reject(new Error('Process failed.'));
+                reject(new Error('Process failed. Code: ' + code));
             else
                 resolve({
                     child: child,

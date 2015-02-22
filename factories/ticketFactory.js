@@ -4,8 +4,10 @@
 "use strict";
 
 var logger = require("winston");
+var moment = require("moment");
+moment.locale('es');
 
-exports.createTicket = function createTicket(signerDN, dstDN, service, TicketTime) {
+exports.createTicket = function createTicket(service) {
     logger.info("createTicket ------");
 
     /******* Ticket Example:
@@ -17,8 +19,8 @@ exports.createTicket = function createTicket(signerDN, dstDN, service, TicketTim
      *         <source>C=AR, O=Ritenere SA, SERIALNUMBER=CUIT 30700627825, CN=fintest</source>
      *         <destination>CN=wsaahomo, O=AFIP, C=AR, SERIALNUMBER=CUIT 33693450239</destination>
      *         <uniqueId>1423847620</uniqueId>
-     *         <generationTime>2015-02-13T14:13:40.332-03:00</generationTime>
-     *         <expirationTime>2015-02-13T15:13:40.332-03:00</expirationTime>
+     *         <generationTime>2015-02-21T14:13:40.332-03:00</generationTime>
+     *         <expirationTime>2015-02-21T15:13:40.332-03:00</expirationTime>
      *     </header>
      *     <service>wsfe</service>
      *     </loginTicketRequest>
@@ -26,51 +28,23 @@ exports.createTicket = function createTicket(signerDN, dstDN, service, TicketTim
      *
      */
 
-    var dateNow = new Date();
-    var gentime = dateNow.toISOString();
-    var exptime = dateNow.toISOString();
-    var uniqueId = dateNow.getTime();
-
-    //exptime.setTime() .setTime());
-
-    //String date = "2009-07-16T19:20:30-05:00";
-    //String pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSz";
-    //SimpleDateFormat sdf = new SimpleDateFormat(pattern);
+    var ticket = {
+        gentime: moment().subtract(10, 'minute').format(),
+        exptime: moment().add(60, 'minute').format(),
+        uniqueId: randomIntInc(1, 999999999)
+    };
 
 
-    //XMLGregorianCalendarImpl XMLGenTime = new XMLGregorianCalendarImpl(gentime);
+    logger.info("uniqueId: " + ticket.uniqueId);
 
-    //XMLGregorianCalendarImpl XMLExpTime = new XMLGregorianCalendarImpl(exptime);
-    logger.info("Fecha: " + dateNow.getTime());
+    var loginTicketRequestXml = '<?xml version="1.0" encoding="UTF-8"?><loginTicketRequest><header><uniqueId>' + ticket.uniqueId + '</uniqueId><generationTime>' + ticket.gentime + '</generationTime><expirationTime>' + ticket.exptime + '</expirationTime></header><service>wsfe</service></loginTicketRequest>';
 
-    var loginTicketRequestXml = ' <?xml version="1.0" encoding="UTF-8"?> '
-            + '<loginTicketRequest> '
-            + '   <header>                                                                                    '
-            + '   <uniqueId>1423847</uniqueId>                                      '
-            + '    <generationTime>2015-02-13T14:13:40.332-03:00</generationTime>     '
-            + '<expirationTime>2015-02-13T15:13:40.332-03:00</expirationTime> '
-            + ' </header>               '
-            + ' <service>wsfe</service>'
-            + '</loginTicketRequest>'
-
-    /*         + ' <loginTicketRequest version="1.0"> '
-     + " <header> "
-     + " <uniqueId> " + uniqueId
-     + " </uniqueId> "
-     + " <generationTime> "
-     + gentime
-     + " </generationTime> "
-     + " <expirationTime> "
-     + exptime
-     + " </expirationTime> "
-     + " </header> "
-     + " <service> "
-     + service
-     + " </service> "
-     + " </loginTicketRequest> "*/;
-
-    logger.info("Ticket: " + loginTicketRequestXml);
+    ticket.xml = loginTicketRequestXml;
     logger.info("createTicket +++++");
 
-    return (loginTicketRequestXml);
+    return (ticket);
 };
+
+function randomIntInc(low, high) {
+    return Math.floor(Math.random() * (high - low + 1) + low);
+}
