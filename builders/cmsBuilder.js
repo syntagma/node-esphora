@@ -4,7 +4,7 @@
 var ticketFactory = require("../factories/ticketFactory");
 var logger = require("winston");
 var path = require('path');
-var fs = require('fs');
+var config = require("../config/configuration").config();
 
 exports.CmsBuilder = function (companyId, callback) {
     var self = this;
@@ -14,12 +14,8 @@ exports.CmsBuilder = function (companyId, callback) {
     mainStream();
 
     function createTicket(callback) {
-        ticket = ticketFactory.createTicket("30700627825", "30700627825", "wsfe", 3600);
+        ticket = ticketFactory.createTicket("wsfe");
         callback();
-        //var sha1 = require('sha1');
-        //fs.writeFile(path.join(__dirname, "TRA.xml"), ticket, function (err) {
-        //    callback(err);
-        //});
     }
 
     function signTicket(callback) {
@@ -34,9 +30,9 @@ exports.CmsBuilder = function (companyId, callback) {
 
         signHelper.sign({
             content: s, //fs.createReadStream(path.join(__dirname, "TRA.xml")),
-            key: path.join(__dirname, '../certs/test/' + "30700627825" + ".privada"),
-            cert: path.join(__dirname, '../certs/test/' + "30700627825" + ".crt"),
-            password: '30700627825'
+            key: path.join(__dirname, '../' + config.path + companyId + ".privada"),
+            cert: path.join(__dirname, '../' + config.path + companyId + ".crt"),
+            password: companyId
         }).catch(function (err) {
             logger.error("Error signing: " + err.stack);
             logger.info("signTicket ++++++++++++");
