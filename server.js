@@ -21,6 +21,9 @@ server.buildAditionalConfiguration();
 server.buildRoutes();
 //server.audit();
 server = server.getInstance();
+server.on('uncaughtException', function (req, res, route, err) {
+    logger.error('uncaughtException', err.stack);
+});
 
 var logger = new winston.Logger({
     transports: [
@@ -29,34 +32,7 @@ var logger = new winston.Logger({
 });
 
 
-// Whatever Winston logger setup your application wants.
-/*
-var logger = new winston.Logger({
-    transports: [
-        new winston.transports.Console({colorize: true, json: false})
-    ]
-});
 
-
-// Pass a Bunyan logger to restify that shims to our winston Logger.
-var shim = bunyan.createLogger({
-    name: 'node-esphora',
-    streams: [{
-        level: 'info',
-        name: 'wagaduu-audit',
-        stream: process.stdout
-    }]
-});
-
-var server = restify.createServer({
-    name: 'node-esphora',
-    version: '1.0.0',
-    log: shim
-});
-server
-    .use(restify.fullResponse())
-    .use(restify.bodyParser());
-*/
 
 
 server.listen(3000, function () {
