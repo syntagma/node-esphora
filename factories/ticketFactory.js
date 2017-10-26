@@ -1,16 +1,21 @@
 /**
  * Created by sebastianbromberg on 10/2/15.
  */
-"use strict";
 
-var logger = require("winston");
-var moment = require("moment");
-moment.locale('es');
+let moment = require( "moment" );
+        randomIntInc = ( low, high ) => {
+            "use strict";
+            return Math.floor( Math.random() * ( high - low + 1 ) + low );
+        };
 
-exports.createTicket = function createTicket(service) {
-    logger.info("createTicket ------");
+    moment.locale( "es" ),
+    
+exports.createTicket = ( service ) => {
+    "use strict";
+    
+    log.debug( "createTicket ------" );
 
-    /******* Ticket Example:
+    /** ***** Ticket Example:
      *
      *
      *
@@ -28,23 +33,21 @@ exports.createTicket = function createTicket(service) {
      *
      */
 
-    var ticket = {
-        gentime: moment().subtract(10, 'minute').format(),
-        exptime: moment().add(60, 'minute').format(),
-        uniqueId: randomIntInc(1, 999999999)
-    };
+    let ticket = {
+            "gentime": moment().subtract( 10, "minute" ).format(),
+            "exptime": moment().add( 60, "minute" ).format(),
+            "uniqueId": randomIntInc( 1, 999999999 )
+        },
+        loginTicketRequestXml = "";
 
 
-    logger.info("uniqueId: " + ticket.uniqueId);
+    log.debug( "uniqueId: " + ticket.uniqueId );
 
-    var loginTicketRequestXml = '<?xml version="1.0" encoding="UTF-8"?><loginTicketRequest><header><uniqueId>' + ticket.uniqueId + '</uniqueId><generationTime>' + ticket.gentime + '</generationTime><expirationTime>' + ticket.exptime + '</expirationTime></header><service>wsfe</service></loginTicketRequest>';
+    loginTicketRequestXml = '<?xml version="1.0" encoding="UTF-8"?><loginTicketRequest><header><uniqueId>' + ticket.uniqueId + '</uniqueId><generationTime>' + ticket.gentime + '</generationTime><expirationTime>' + ticket.exptime + '</expirationTime></header><service>wsfe</service></loginTicketRequest>';
 
     ticket.xml = loginTicketRequestXml;
-    logger.info("createTicket +++++");
+    log.debug( "createTicket +++++" );
 
-    return (ticket);
+    return ( ticket );
 };
 
-function randomIntInc(low, high) {
-    return Math.floor(Math.random() * (high - low + 1) + low);
-}

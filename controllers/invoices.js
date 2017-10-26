@@ -1,79 +1,190 @@
 /**
  * Created by sebastianbromberg on 10/2/15.
  */
-var logger = require('winston');
-var tickets = require('./tickets');
+let // logger = require( "winston" ),
+    tickets = require( "./tickets" ),
+    soap = require( "soap" ),
+    parseString = require( "xml2js" ).parseString;
 
-exports.findInvoice = function findInvoice(companyId, pos, type, number, callback) {
-    logger.info("findInvoice ----");
-    tickets.findOrCreateTicket(companyId, function (err, ticket) {
-        if (err) {
-            err = "Error trying to find or create Ticket: " + err;
-            callback(err);
-            return;
+exports.compUltimoAutorizado = ( companyId, pos, type, callback ) => {
+    "use strict";
+
+    log.debug( "findInvoice ----" );
+    tickets.findOrCreateTicket( companyId, ( err2, ticket ) => {
+        if ( err2 ) {
+            log.error( err2 );
+            return callback( "Error trying to find or create Ticket: " + err );
         }
 
-        createClientAfipWSFEv1(function (err, client) {
-                var args = [{
-                    "Auth": {
-                        "Token": ticket.token,
-                        "Sign": ticket.sign,
-                        "Cuit": ticket.company
-                    },
-                    "FeCompConsReq": {
-                        "CbteTipo": type,
-                        "CbteNro": number,
-                        "PtoVta": pos
-                    }
-                }];
-
-                client.FECompConsultar(args, function (err, result) {
-                    var parseString = require('xml2js').parseString;
-                    logger.info("FECompConsultar returned");
-                    logger.info("Soap message: " + client.lastRequest);
-
-                    if (err) {
-                        logger.error("FECompConsultar error returned");
-                        //var cleanedErr = err.replace("\ufeff", "");
-                        parseString(err.body, function (err, parsedErr) {
-                            if (err) {
-                                logger.error("parseString: Error parsing string. Error: " + err);
-                                callback("parseString: Error parsing string. Error: " + err);
-                                logger.info("findInvoice ++++");
-                                return;
-
-                            }
-                            logger.info("FECompConsultar parsed");
-                            callback(err, parsedErr);
-                        });
-                        return;
-                    }
-
-                    if(result.FECompConsultarResult.Errors) {
-                        callback(result.FECompConsultarResult.Errors.Err, null);
-                        logger.info("findInvoice ++++");
-
-                    } else {
-                        callback(null, result.FECompConsultarResult.ResultGet);
-                        logger.info("findInvoice ++++");
-                    }
-                });
+        createClientAfipWSFEv1( ( err3, client ) => {
+            if ( err3 ) {
+                log.error( err3 );
+                return callback( "Se ha producido un error al crear createClientAfipWSFEv1" );
             }
-        );
-    });
+
+            let args = {
+                "Auth": {
+                    "Token": ticket.token,
+                    "Sign": ticket.sign,
+                    "Cuit": ticket.company
+                },
+                "CbteTipo": type,
+                "PtoVta": pos
+            };
+
+            client.FECompUltimoAutorizado( args, ( err4, result ) => {
+                if ( err4 ) {
+                    log.error( "FECompConsultar error returned" );
+                    parseString( err.body, ( err5, parsedErr ) => {
+                        if ( err5 ) {
+                            log.error( "parseString: Error parsing string. Error: " + err5 );
+                            log.debug( "findInvoice ++++" );
+                            return callback( "parseString: Error parsing string. Error: " + err5 );
+                        }
+                        log.debug( "FECompConsultar parsed" );
+                        log.debug( "findInvoice ++++" );
+                        return callback( err5, parsedErr );
+                    } );
+                }
+
+                log.debug( "FECompConsultar returned" );
+                log.debug( "Soap message: " + client.lastRequest );
+                console.dir( result.FECompUltimoAutorizadoResult );
+                if ( result.FECompUltimoAutorizadoResult.Errors ) {
+                    log.debug( "findInvoice ERRORS" );
+                    log.error( result.FECompUltimoAutorizadoResult.Errors.Err[ 0 ].Msg );
+                    log.debug( "findInvoice ++++" );
+                    return callback( result.FECompUltimoAutorizadoResult.Errors.Err[ 0 ].Msg );
+
+                }
+
+                log.debug( "findInvoice ++++" );
+                return callback( null, result.FECompUltimoAutorizadoResult );
+            } );
+        } );
+    } );
+};
+    
+
+exports.compConsultar = ( companyId, pos, type, number, callback ) => {
+    "use strict";
+
+    log.debug( "findInvoice ----" );
+    tickets.findOrCreateTicket( companyId, ( err2, ticket ) => {
+        if ( err2 ) {
+            log.error( err2 );
+            return callback( "Error trying to find or create Ticket: " + err );
+        }
+
+        createClientAfipWSFEv1( ( err3, client ) => {
+            if ( err3 ) {
+                log.error( err3 );
+                return callback( "Se ha producido un error al crear createClientAfipWSFEv1" );
+            }
+
+            let args = {
+                "Auth": {
+                    "Token": ticket.token,
+                    "Sign": ticket.sign,
+                    "Cuit": ticket.company
+                },
+                "FeCompConsReq": {
+                    "CbteTipo": type,
+                    "CbteNro": number,
+                    "PtoVta": pos
+                }
+            };
+
+            client.FECompConsultar( args, ( err4, result ) => {
+                if ( err4 ) {
+                    log.error( "FECompConsultar error returned" );
+                    parseString( err.body, ( err5, parsedErr ) => {
+                        if ( err5 ) {
+                            log.error( "parseString: Error parsing string. Error: " + err5 );
+                            log.debug( "findInvoice ++++" );
+                            return callback( "parseString: Error parsing string. Error: " + err5 );
+                        }
+                        log.debug( "FECompConsultar parsed" );
+                        log.debug( "findInvoice ++++" );
+                        return callback( err5, parsedErr );
+                    } );
+                }
+
+                log.debug( "FECompConsultar returned" );
+                log.debug( "Soap message: " + client.lastRequest );
+
+                if ( result.FECompConsultarResult.Errors ) {
+                    log.debug( "findInvoice ERRORS" );
+                    log.error( result.FECompConsultarResult.Errors.Err[ 0 ].Msg );
+                    log.debug( "findInvoice ++++" );
+                    return callback( result.FECompConsultarResult.Errors.Err[ 0 ].Msg );
+
+                }
+
+                log.debug( "findInvoice ++++" );
+                return callback( null, result.FECompConsultarResult.ResultGet );
+            } );
+        } );
+    } );
+};
+
+exports.dummy = ( callback ) => {
+    "use strict";
+
+    log.debug( "dummy ----" );
+
+    createClientAfipWSFEv1( ( err3, client ) => {
+        if ( err3 ) {
+            log.error( err3 );
+            return callback( "Se ha producido un error al crear createClientAfipWSFEv1" );
+        }
+
+        let args = {
+        };
+
+        client.FEDummy( args, ( err4, result ) => {
+            if ( err4 ) {
+                log.error( "FEDummy error returned" );
+                parseString( err.body, ( err5, parsedErr ) => {
+                    if ( err5 ) {
+                        log.error( "parseString: Error parsing string. Error: " + err5 );
+                        log.debug( "FEDummy ++++" );
+                        return callback( "parseString: Error parsing string. Error: " + err5 );
+                    }
+                    log.debug( "FEDummy parsed" );
+                    log.debug( "FEDummy ++++" );
+                    return callback( err5, parsedErr );
+                } );
+            }
+
+            log.debug( "FEDummy returned" );
+            log.debug( "Soap message: " + client.lastRequest );
+
+            if ( result.FEDummyResult.Errors ) {
+                log.debug( "FEDummy ERRORS" );
+                log.error( result.FEDummyResult.Errors.Err[ 0 ].Msg );
+                log.debug( "FEDummy ++++" );
+                return callback( result.FEDummyResult.Errors.Err[ 0 ].Msg );
+
+            }
+
+            log.debug( "FEDummy ++++" );
+            return callback( null, result.FEDummyResult );
+        } );
+    } );
 };
 
 
-function createClientAfipWSFEv1(callback) {
-    logger.info("invokeAfipWSFEv1 --------------- ");
-    var soap = require('soap');
+createClientAfipWSFEv1 = ( callback ) => {
+    "use strict";
+    log.debug( "invokeAfipWSFEv1 --------------- " );
 
 
-    var url = 'https://wswhomo.afip.gov.ar/wsfev1/service.asmx?WSDL';
+    const url = "https://wswhomo.afip.gov.ar/wsfev1/service.asmx?WSDL";
 
-    soap.createClient(url, function (err, client) {
-        callback(err, client);
-    });
-    logger.info("invokeAfipWSFEv1 ++++++++++++++ ");
+    soap.createClient( url, ( err, client ) => {
+        callback( err, client );
+    } );
+    log.debug( "invokeAfipWSFEv1 ++++++++++++++ " );
 
-}
+};

@@ -1,62 +1,66 @@
 /**
  * Created by sebastianbromberg on 21/2/15.
  */
-var save = require('save')
-    , saveTicket = save('ticket');
-var logger = require('winston');
-var moment = require('moment');
+let save = require( "save" ),
+    saveTicket = save( "ticket" ),
+    moment = require( "moment" ),
+    cmsBuilder = require( "../builders/cmsBuilder" );
+    
 
-saveTicket.on('create', function() {
-    console.log('New ticket created!')
-});
+saveTicket.on( "create", ( ) => {
+    "use strict";
+    log.debug( "New ticket created!" );
+} );
 
-exports.findOrCreateTicket = function findOrCreateTicket(companyId, callback) {
-    logger.info("findOrCreateTicket ----");
-    saveTicket.find({"company" : companyId}, function (err, tickets){
-        if (err) {
-            logger.error("Error finding ticket for company: " + companyId + ". Error: " + err);
-            callback (err);
-            return;
+exports.findOrCreateTicket = ( companyId, callback ) => {
+    "use strict";
+
+    log.debug( "findOrCreateTicket ----" );
+    saveTicket.find( { "company": companyId }, ( err, tickets ) => {
+        if ( err ) {
+            log.error( "Error finding ticket for company: " + companyId + ". Error: " + err );
+            log.debug( "findOrCreateTicket +++++" );
+            return callback( err );
         }
 
-        if (tickets && tickets.length > 0 ) {
-            logger.info ("Ticket found for company " + companyId + "checking time ....");
-            var expTime = moment(tickets[0].exptime);
-            if (moment().diff(expTime) < 0) {
-                logger.info("Difference: " + moment().diff(expTime));
-                callback (err, tickets[0]);
-            } else {
-                saveTicket.delete(tickets[0]._id, function(err) {
-                    if (err) {
-                        callback (err);
-                        return;
-                    }
-                    exports.findOrCreateTicket(companyId, function (err, ticket){
-                        callback (err, ticket);
-                    })
-                })
+        if ( tickets && tickets.length > 0 ) {
+            log.debug( "Ticket found for company " + companyId + "checking time ...." );
+            let expTime = moment( tickets[ 0 ].exptime );
+
+            if ( moment().diff( expTime ) < 0 ) {
+                log.debug( "Difference: " + moment().diff( expTime ) );
+                return callback( err, tickets[ 0 ] );
             }
+
+            saveTicket.delete( tickets[ 0 ]._id, ( err2 ) => {
+                if ( err2 ) {
+                    return callback( err );
+                }
+                exports.findOrCreateTicket( companyId, ( err3, ticket ) => {
+                    log.debug( "findOrCreateTicket +++++" );
+                    return callback( err3, ticket );
+                } );
+            } );
+            
         } else {
-            var cmsBuilder = require("../builders/cmsBuilder");
-            var cms = new cmsBuilder.CmsBuilder(companyId, function (err, newTicket) {
-                if (err) {
-                    if (err.code && err.message) {
-                        customErr = "Code: " + err.code ;
-                        customErr = customErr + "Message: " + err.message;
-                        callback (customErr);
-                    } else
-                    {
-                        callback (err);
+            cmsBuilder.buildTicket( companyId, ( err2, newTicket ) => {
+                if ( err2 ) {
+                    if ( err2.code && err2err.message ) {
+                        customErr = "Code: " + err2.code ;
+                        customErr = customErr + "Message: " + err2.message;
+                        log.debug( "findOrCreateTicket ++++" );
+                        return callback( customErr );
                     }
 
-                    logger.info("findOrCreateTicket ++++");
-                    return;
+                    log.debug( "findOrCreateTicket ++++" );
+                    return callback( err2 );
                 }
-                console.dir(newTicket);
-                saveTicket.create(newTicket);
-                callback(err, newTicket);
-                logger.info("findOrCreateTicket ++++");
-            });
+
+                log.debug( newTicket );
+                saveTicket.create( newTicket );
+                log.debug( "findOrCreateTicket +++++" );
+                return callback( err, newTicket );
+            } );
         }
     } );
 };

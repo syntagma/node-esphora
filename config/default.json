@@ -1,0 +1,69 @@
+{
+  "app" : {
+        "name": "esphora-node-api",
+        "version": "0.0.1",
+        "env": "development",
+        "port": 3000,
+        "base_url": "http://localhost:3000",
+        "cluster": true
+    },
+    "log" : {
+      "level": "debug"
+    },
+  "mailGun": {
+    "key" : "key-a830de7463e106bf14d46b75e37a2f5d",
+    "domain" : "mg.syntagma.com.ar"
+  },
+  "nodeMailer" : {
+        "service" : "gmail",
+        "host" : "smtp.gmail.com",
+        "port" : "465",
+        "user" : "carpooling@syntagma.com.ar",
+        "pass" : "mercedesbenzarg"
+  },
+  "logEntries" : {
+      "token": "ad6290a7-01bb-4bef-8829-bf2e6956e820",
+      "enable": false,
+      "level": "warn"
+  },
+  "mongo" : {
+        "uri": "mongodb://stage:stage@ds061721.mlab.com:61721/teneslugar-stage",
+        "useMongoClient": true,
+        "debug": true,
+        "offset": 100,
+        "start": 0
+        //"uri": "mongodb://localhost:27017/teneslugar-stage"
+  },/*
+  "redis": {
+    "host": "redis-19086.c14.us-east-1-3.ec2.cloud.redislabs.com",
+    "port": "19086"
+  },*/
+  "rsmq": {
+      "enable": false,
+      "host" : "redis-19086.c14.us-east-1-3.ec2.cloud.redislabs.com",
+      "port" : 19086,
+      "ns" : "rsmq"
+  },
+  "mailing" : {  //
+      "admin": {
+        "email": "karina.pereira@syntagma.com.ar",
+        "name": "Syntagma"
+    }
+  },
+  "newrelic" : {
+    "enabled": false
+  },
+  "encoding" : {
+    "default" : "md5"
+  },
+  "certs": {
+    "path": "certs/test/"
+  },
+  "timezone": {
+    "type": "GTM",
+    "UTC": false,
+    "adjust": 3,
+    "negative": true
+  }
+  
+}

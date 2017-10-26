@@ -1,12 +1,12 @@
 /**
  * Created by sebastianbromberg on 20/2/15.
  */
-var util = require('util');
-var spawn = require('child_process').spawn;
-var Promise = require('promise');
+let util = require( "util" ),
+    spawn = require( "child_process" ).spawn,
+    Promise = require( "promise" );
 
 // Expose methods.
-exports.sign = sign;
+// exports.sign = sign;
 
 /**
  * Sign a file.
@@ -25,48 +25,58 @@ exports.sign = sign;
  * @returns {ChildProcess} result.child Child process
  */
 
-function sign(options, cb) {
-    return new Promise(function (resolve, reject) {
+exports.sign = ( options, cb ) => {
+    "use strict";
+    log.debug( "sign ------" );
+    return new Promise( ( resolve, reject ) => {
+        let args, child, der, command;
+
         options = options || {};
 
-        if (!options.content)
-            throw new Error('Invalid content.');
+        if ( !options.content ) {
+            throw new Error( "Invalid content." );
+        }
 
-        if (!options.key)
-            throw new Error('Invalid key.');
+        if ( !options.key ) {
+            throw new Error( "Invalid key." );
+        }
 
-        if (!options.cert)
-            throw new Error('Invalid certificate.');
+        if ( !options.cert ) {
+            throw new Error( "Invalid certificate." );
+        }
 
-        var command = util.format(
-            'openssl smime -sign -binary -signer %s -inkey %s -outform DER -nodetach',
+        command = util.format(
+            "openssl smime -sign -binary -signer %s -inkey %s -outform DER -nodetach",
             options.cert,
             options.key
         );
 
-        if (options.password)
-            command += util.format(' -passin pass:%s', options.password);
+        if ( options.password ) {
+            command += util.format( " -passin pass:%s", options.password );
+        }
+        log.debug( command );
+        
+        args = command.split( " " );
+        log.debug( args );
+        child = spawn( args[ 0 ], args.splice( 1 ) );
+        der = [];
 
-        var args = command.split(' ');
-        var child = spawn(args[0], args.splice(1));
+        child.stdout.on( "data", ( chunk ) => {
+            der.push( chunk );
+        } );
 
-        var der = [];
+        child.on( "close", ( code ) => {
+            if ( code !== 0 ) {
+                reject( new Error( "Process failed. Code: " + code ) );
+            } else {
+                resolve( {
+                    "child": child,
+                    "der": Buffer.concat( der )
+                } );
+            }
+        } );
 
-        child.stdout.on('data', function (chunk) {
-            der.push(chunk);
-        });
-
-        child.on('close', function (code) {
-            if (code !== 0)
-                reject(new Error('Process failed. Code: ' + code));
-            else
-                resolve({
-                    child: child,
-                    der: Buffer.concat(der)
-                });
-        });
-
-        options.content.pipe(child.stdin);
-    })
-        .nodeify(cb);
-}
+        options.content.pipe( child.stdin );
+    } )
+        .nodeify( cb );
+};
