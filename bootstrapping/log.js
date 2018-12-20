@@ -30,6 +30,6 @@ if ( config.get( "logEntries.enable" ) ) {
 /**
  * Logging
  */
-global.log = new winston.Logger( { "transports": transports } );
+global.log = winston.createLogger( { "transports": transports } );
 
 module.exports = log;

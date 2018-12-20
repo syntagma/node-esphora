@@ -53,11 +53,13 @@ if ( cluster.isMaster && config.get( "app.cluster" ) ) {
     /**
      * Middleware
      */
-    server.use( restify.jsonBodyParser( { "mapParams": true } ) );
-    server.use( restify.acceptParser( server.acceptable ) );
-    server.use( restify.queryParser( { "mapParams": true } ) );
-    server.use( restify.fullResponse() );
-    server.use( restify.authorizationParser() );
+    const plugins = require('restify-plugins');
+    server.use(plugins.jsonBodyParser());    
+    // server.use( restify.jsonBodyParser( { "mapParams": true } ) );
+    server.use( plugins.acceptParser( server.acceptable ) );
+    server.use( plugins.queryParser( { "mapParams": true } ) );
+    server.use( plugins.fullResponse() );
+    server.use( plugins.authorizationParser() );
     server.use( passport.initialize() );
     server.use(
         ( req, res, next ) => {
