@@ -22,7 +22,7 @@ rootRouter.get( "/", ( req, res ) => {
     res.send( 200, "esphora-api" );
 } );
 
-publicRouter.all( "*", passport.authenticate( "public", { "session": false } ), ( req, res, next ) => {
+publicRouter.all( "*", ( req, res, next ) => {
     "use strict";
     next();
 } );
