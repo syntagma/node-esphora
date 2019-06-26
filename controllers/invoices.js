@@ -13,7 +13,7 @@ exports.compUltimoAutorizado = ( companyId, pos, type, callback ) => {
     tickets.findOrCreateTicket( companyId, ( err2, ticket ) => {
         if ( err2 ) {
             log.error( err2 );
-            return callback( "Error trying to find or create Ticket: " + err );
+            return callback( "Error trying to find or create Ticket: " + err2 );
         }
 
         createClientAfipWSFEv1( ( err3, client ) => {

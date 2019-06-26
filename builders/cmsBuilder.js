@@ -62,7 +62,7 @@ exports.buildTicket = ( companyId, callback ) => {
                 client.loginCms( args, ( err, result ) => {
 
                     if ( err ) {
-                        lo.error( "loginCms error returned" );
+                        log.error( "loginCms error returned: " + err );
                         //var cleanedErr = err.replace("\ufeff", "");
                         parseString( err.body, ( err2, parsedErr ) => {
                             if ( err2 ) {
@@ -70,11 +70,11 @@ exports.buildTicket = ( companyId, callback ) => {
                             }
 
                             let afipError = {
-                                "code": parsedErr[ "soapenv:Envelope" ][" soapenv:Body" ][ 0 ][ "soapenv:Fault" ][ 0 ].faultcode[ 0 ][ "_" ],
+                                // "code": parsedErr[ "soapenv:Envelope" ][" soapenv:Body" ][ 0 ][ "soapenv:Fault" ][ 0 ].faultcode[ 0 ][ "_" ],
                                 "message": parsedErr[ "soapenv:Envelope" ][ "soapenv:Body" ][ 0 ][ "soapenv:Fault" ][ 0 ].faultstring[ 0 ]
                             };
 
-                            callback( afipError );
+                            callback( afipError.message );
                             log.debug( "invokeAfipWSAA ++++++++++++++ " );
                         });
                         return;
