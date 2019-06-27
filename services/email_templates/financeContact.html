@@ -1,0 +1,150 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//En" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <!-- NAME: 1 COLUMN - FULL WIDTH -->
+    <!--[if gte mso 15]>
+      <xml>
+        <o:OfficeDocumentSettings>
+          <o:AllowPNG />
+          <o:PixelsPerInch>96</o:PixelsPerInch>
+        </o:OfficeDocumentSettings>
+      </xml>
+    <![endif]-->
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+  </head>
+  <body style="margin: 0px">
+    <table
+      width="800"
+      border="0"
+      align="center"
+      cellpadding="0"
+      cellspacing="0"
+      style="font-family: Arial, sans-serif; font-size: 14px; color: #000"
+    >
+      <tr>
+        <td>
+          <!-- Se puede modificar el width general, el diseño se adapta -->
+          <table
+            width="600"
+            border="0"
+            cellspacing="0"
+            cellpadding="0"
+          >
+            <tr>
+              <td
+                style="background-color: #221E1F; margin: 0; padding: 12px 22px"
+              >
+                <img
+                  src="cid:logo@selectrucks"
+                  width="167"
+                  height="38"
+                  alt="SelecTrucks"
+                  style="border: none; margin: 0px 0px 0px 0px"
+                />
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="background-color: #F6F6F6; padding: 80px 22px 80px 22px"
+              >
+                <h1
+                  style="font-family: Arial, sans-serif; font-size: 35px; line-height: 50px; color: #221D1F; margin: 10px 0 10px 0; padding: 0"
+                >
+                  <%=title%>
+                </h1>
+
+                <h2
+                  style="font-family: Arial, sans-serif; font-weight: normal; font-size: 18px; line-height: 30px; color: #EB202C; margin: 10px 0 10px 0; padding: 0; text-transform: uppercase;"
+                >
+                  <%=subtitle%>
+                </h2>
+
+                <p
+                  style="font-family: Arial, sans-serif; font-weight: normal; font-size: 20px; line-height: 30px; color: #949494; margin: 60px 0 30px 0; padding: 0"
+                >
+                  <%=message%>
+                </p>
+
+                <span
+                  style="background-color: #FFFFFF; padding: 10px 22px 10px 22px; margin: 0 0 50px 0; display: block"
+                >
+                  <h3
+                    style="font-family: Arial, sans-serif; font-weight: bold; font-size: 20px; line-height: 30px; color: #221D1F; margin: 20px 0 20px 0; padding: 0"
+                  >
+                    Datos de contacto
+                  </h3>
+                  <h4
+                    style="font-family: Arial, sans-serif; font-weight: normal; font-size: 16px; line-height: 26px; color: #EB202C; margin: 20px 0 0 0; padding: 0; text-transform: uppercase;"
+                  >
+                    Nombre
+                  </h4>
+                  <p
+                    style="font-family: Arial, sans-serif; font-weight: normal; font-size: 20px; line-height: 30px; color: #949494; margin: 0 0 20px 0; padding: 0"
+                  >
+                    <%=contact.name%>
+                  </p>
+
+                  <h4
+                    style="font-family: Arial, sans-serif; font-weight: normal; font-size: 16px; line-height: 26px; color: #EB202C; margin: 20px 0 0 0; padding: 0; text-transform: uppercase;"
+                  >
+                    Teléfono
+                  </h4>
+                  <p
+                    style="font-family: Arial, sans-serif; font-weight: normal; font-size: 20px; line-height: 30px; color: #949494; margin: 0 0 20px 0; padding: 0"
+                  >
+                    <%=contact.phone%>
+                  </p>
+
+                  <h4
+                    style="font-family: Arial, sans-serif; font-weight: normal; font-size: 16px; line-height: 26px; color: #EB202C; margin: 20px 0 0 0; padding: 0; text-transform: uppercase;"
+                  >
+                    Mail
+                  </h4>
+                  <p
+                    style="font-family: Arial, sans-serif; font-weight: normal; font-size: 20px; line-height: 30px; color: #949494; margin: 0 0 20px 0; padding: 0"
+                  >
+                    <%=contact.email%>
+                  </p>
+
+                  <h4
+                    style="font-family: Arial, sans-serif; font-weight: normal; font-size: 16px; line-height: 26px; color: #EB202C; margin: 20px 0 0 0; padding: 0; text-transform: uppercase;"
+                  >
+                    Unidad
+                  </h4>
+                  <p
+                    style="font-family: Arial, sans-serif; font-weight: normal; font-size: 20px; line-height: 30px; color: #949494; margin: 0 0 20px 0; padding: 0"
+                  >
+                    <%=contact.truck.name%>
+                  </p>
+                  <h4
+                    style="font-family: Arial, sans-serif; font-weight: normal; font-size: 16px; line-height: 26px; color: #EB202C; margin: 20px 0 0 0; padding: 0; text-transform: uppercase;"
+                  >
+                    Monto a Financiar
+                  </h4>
+                  <p
+                    style="font-family: Arial, sans-serif; font-weight: normal; font-size: 20px; line-height: 30px; color: #949494; margin: 0 0 20px 0; padding: 0"
+                  >
+                    <%=contact.amount%>
+                  </p>
+                </span>
+
+                <a
+                  href="<%=frontendUrl%>/trucks/<%=contact.truck.id%>"
+                  style="font-family: Arial, sans-serif; font-weight: normal; font-size: 16px; line-height: 26px; font-weight: bold; text-decoration: none; color: #FFF; background-color: #EB202C; border-radius: 20px;  margin: 20px 22px; padding: 10px 20px 10px 20px; text-transform: uppercase;"
+                  >Ver unidad</a
+                >
+              </td>
+            </tr>
+            <tr>
+              <td
+                style="background-color: #221E1F; margin: 0; padding: 12px 22px; height: 40px"
+              ></td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>

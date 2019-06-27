@@ -1,100 +1,159 @@
-#!/usr/bin/env node
+const hapi = require('@hapi/hapi');
+const routes = require('./routes');
+const config = require('config');
+const { ApolloServer } = require('apollo-server-hapi');
+const typeDefs = require('./graphql/schema');
+const resolvers = require('./graphql/resolvers');
+const winston = require('winston');
+const goodWinston = require('hapi-good-winston').goodWinston;
+const Ddos = require('ddos');
+const ddos = new Ddos({ burst: 20, limit: 20 });
+const RollbarTransport = require('winston-transport-rollbar-3');
+const rollbarConfig = {
+  accessToken: 'c2b32d963c3749b985edf4e9d51b6709',
+  environment: process.env.NODE_ENV || 'development',
+  captureUncaught: true,
+  captureUnhandledRejections: true
+};
 
-/**
- * Module Dependencies
- */
-//if ( require( "config" ).get( "newrelic.enabled" ) ) {
-//    console.log( "NewRelic is enabled" );
-//    require( "newrelic" );
-//}
+global.logger = winston.createLogger({
+  level: 'info',
+  // format: winston.format.json(),
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.colorize(),
+    winston.format.simple()
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new RollbarTransport({
+      rollbarConfig,
+      level: 'warn'
+    })
+  ]
+});
 
- 
-let config = require( "config" ),
-    restify = require( "restify" ),
-    bunyanWinston = require( "bunyan-winston-adapter" ),
-    log = require( "./bootstrapping/log.js" ),
-    mongoose = require( "./bootstrapping/mongoose" ),
-    passport = require( "./bootstrapping/passport" ),
-    rsmq = require( "./bootstrapping/rsmq" ),
-    rootRouter = require( "./bootstrapping/routes" ),
-    cluster = require( "cluster" ),
-    os = require( "os" );
-    /* Initialize Server */
+const goodWinstonOptions = {
+  levels: {
+    response: 'debug',
+    error: 'info'
+  }
+};
 
+const options = {
+  ops: {
+    interval: 1000
+  },
+  reporters: {
+    // Simple and straight forward usage
+    winston: [goodWinston(logger)],
+    // Adding some customization configuration
+    winstonWithLogLevels: [goodWinston(logger, goodWinstonOptions)],
+    // This example simply illustrates auto loading and instantiation made by good
+    winston2: [
+      {
+        module: 'hapi-good-winston',
+        name: 'goodWinston',
+        args: [logger, goodWinstonOptions]
+      }
+    ]
+  }
+};
 
-if ( cluster.isMaster && config.get( "app.cluster" ) ) {
-    let numWorkers = os.cpus().length;
-
-    log.info( "Master cluster setting up " + numWorkers + " workers..." );
-
-    for ( let i = 0; i < numWorkers; i++ ) {
-        cluster.fork();
+const app = hapi.server({
+  port: process.env.PORT || config.get('app.port'),
+  routes: {
+    cors: {
+      origin: [
+        'http://localhost:3000',
+        'http://ip.syntag.ma',
+        'http://localhost'
+      ],
+      headers: ['Accept', 'Content-Type', 'Accept-Language'],
+      additionalHeaders: ['Cache-Control', 'X-Requested-With', 'Authorization']
     }
+  }
+});
 
-    cluster.on( "online", ( worker ) => {
-        "use strict";
-        log.info( "Worker " + worker.process.pid + " is online" );
-    } );
-
-    cluster.on( "exit", ( worker, code, signal ) => {
-        "use strict";
-        log.info( "Worker " + worker.process.pid + " died with code: " + code + ", and signal: " + signal );
-        log.info( "Starting a new worker" );
-        cluster.fork();
-    } );
-} else {
-    let server = restify.createServer( {
-        "name": config.get( "app.name" ),
-        "version": config.get( "app.version" ),
-        "log": bunyanWinston.createAdapter( log )
-    } );
-
-
-    /**
-     * Middleware
-     */
-    const plugins = require('restify-plugins');
-    server.use(plugins.jsonBodyParser());    
-    // server.use( restify.jsonBodyParser( { "mapParams": true } ) );
-    server.use( plugins.acceptParser( server.acceptable ) );
-    server.use( plugins.queryParser( { "mapParams": true } ) );
-    server.use( plugins.fullResponse() );
-    server.use( plugins.authorizationParser() );
-    server.use( passport.initialize() );
-    server.use(
-        ( req, res, next ) => {
-            "use strict";
-            res.header( "Access-Control-Allow-Origin", "*" );
-            res.header( "Access-Control-Allow-Headers", "X-Requested-With" );
-            return next();
-        }
-      );
-
-    /**
-     * Lift Server, Connect to DB & Bind Routes
-     */
-    server.listen( config.get( "app.port" ), () => {
-        "use strict";
-
-        log.info(
-                "%s v%s ready to accept connections on port %s in %s environment.",
-                server.name,
-                config.get( "app.version" ),
-                config.get( "app.port" ),
-                config.get( "app.env" )
-        );
-        log.info( "Process " + process.pid + " is listening to all incoming requests" );
-
-
-        // mongoose.setApp();
-
-        // if ( config.get( "rsmq.enable" ) ) {
-        //    global.rsmq = rsmq.startApp();
-        // }
-
-        rootRouter.applyRoutes( server );
-    
-    } );
-//    server.all('/*', function(req, res) {res.send('process ' + process.pid + ' says hello!').end();})
-
+const init = async () => {
+  /*
+	await server.register([
+	Inert,
+	Vision,
+	{
+	plugin: HapiSwagger,
+	options: {
+	info: {
+	title: 'Paintings API Documentation',
+	version: Pack.version
 }
+}
+}
+]);*/
+
+  await app.register(require('hapi-auth-jwt2'));
+  await app.register({
+    plugin: require('good'),
+    options
+  });
+
+  app.auth.strategy('jwt', 'jwt', {
+    key: config.get('jwt.encryption'),
+    validate: require('./auth_jwt_validate.js'),
+    verifyOptions: { algorithms: ['HS256'] }
+  });
+
+  app.route(routes);
+
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+    //context: ({ request: Request, h: ResponseToolkit }) => ({ request, h }),
+    route: {
+      auth: {
+        // This option will determine what HapiJS will do with your default strategy.
+        // Try means it will tty to authenticate, but on failure it won't block the request.
+        // By passing the request object into your context, you can access it inside of your resolvers
+        // and check the request.auth object for authentication properties.
+        strategy: 'jwt',
+        mode: 'try'
+      },
+      introspection: process.env.NODE_ENV === 'development'
+    },
+    graphqlOptions: request => ({
+      schema,
+      context: request // hapi request
+    })
+    /*
+    context: async ({ request, h }) => {
+      const credentials = request.auth.credentials;
+      return { credentials };
+    }
+    */
+  });
+
+  app.ext('onRequest', ddos.hapi17.bind(ddos));
+
+  await server.applyMiddleware({
+    app,
+    path: '/v1/queries'
+  });
+
+  await server.installSubscriptionHandlers(app.listener);
+
+  await app.start();
+  logger.info(`Server running at: ${app.info.uri}`);
+};
+
+process.on('unHandledRejection', err => {
+  if (err) {
+    logger.error(err);
+    process.exit(1);
+  }
+});
+
+init().catch(err => {
+  logger.error(err);
+});
+
+module.exports = app;

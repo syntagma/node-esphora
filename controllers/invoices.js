@@ -175,16 +175,4 @@ exports.dummy = ( callback ) => {
 };
 
 
-createClientAfipWSFEv1 = ( callback ) => {
-    "use strict";
-    log.debug( "invokeAfipWSFEv1 --------------- " );
 
-
-    const url = "https://wswhomo.afip.gov.ar/wsfev1/service.asmx?WSDL";
-
-    soap.createClient( url, ( err, client ) => {
-        callback( err, client );
-    } );
-    log.debug( "invokeAfipWSFEv1 ++++++++++++++ " );
-
-};

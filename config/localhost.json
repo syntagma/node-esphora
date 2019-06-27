@@ -1,0 +1,12 @@
+{
+  "app" : {
+    "env": "local"
+  },
+  "mongo" : {
+    "db_host":"localhost",
+    "db_port":"27017",
+    "db_name":"facturs-afip",
+    "db_user": "",
+    "db_password": ""
+  }
+}

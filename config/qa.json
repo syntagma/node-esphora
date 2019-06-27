@@ -10,16 +10,16 @@
     "cluster": true
   },
   "mongo" : {
-    "db_host":"ds243717.mlab.com",
-    "db_port":"43717",
-    "db_name":"facturs-afip-dev",
-    "db_user": "facturs",
-    "db_password": "facturs1",
+    "db_host":"ds039768.mlab.com",
+    "db_port":"39768",
+    "db_name":"selectrucks-dev",
+    "db_user": "selectrucks",
+    "db_password": "selectrucks1",
     "debug": false
   },
   "jwt": {
     "expiration": "10000",
-    "encryption": "facturs-key"
+    "encryption": "selectrucks-key"
   },
   "password": {
     "min": 8,
@@ -41,8 +41,8 @@
   },
   "mailing" : {
     "admin": {
-      "address": "seba@syntag.ma ",
-      "name": "Sebastian Bromberg"
+      "address": "federico.amden@daimler.com ",
+      "name": "Federico Amden"
     },
     "sender": {
       "address": "selectrucks-argentina@daimler.com",
@@ -61,11 +61,5 @@
   "finance": {
     "model": 75101,
     "nuevo": false
-  },
-  "encoding" : {
-    "default" : "md5"
-  },
-  "certs": {
-    "path": "certs/test/"
   }
 }

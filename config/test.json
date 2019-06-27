@@ -1,0 +1,12 @@
+{
+  "app" : {
+    "env": "local"
+  },
+  "mongo" : {
+    "db_host":"ds031641.mlab.com",
+    "db_port":"31641",
+    "db_name":"selectrucks-test",
+    "db_user": "selectrucks",
+    "db_password": "selectrucks1"
+  }
+}
